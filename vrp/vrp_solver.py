@@ -167,6 +167,14 @@ class NearestNeighborHeuristic(VRPInitialRouteHeuristic):
 
 
 class SweepAngleHeuristic(VRPInitialRouteHeuristic):
+    def __init__(
+        self,
+        tsp_correct_paths: bool = True,
+        min_capacity_ratio: float = 0.5,
+    ) -> None:
+        super().__init__(tsp_correct_paths=tsp_correct_paths)
+        self.min_capacity_ratio = min_capacity_ratio
+
     @staticmethod
     def _get_angles(loc_x_y: list[tuple[float, float]]) -> list[float]:
         # returns angle of locations vs north pole
@@ -191,7 +199,11 @@ class SweepAngleHeuristic(VRPInitialRouteHeuristic):
         for i in range(len(ordered_locations)):
             # add all sweeps starting from index
             sweeps = [tuple(ordered_locations_sweep_list[i : i + j]) for j in range(1, len(ordered_locations))]
-            all_sweeps.extend(sweeps)
+            capacity_ratios = [sum(loc.demand for loc in s if loc.demand is not None) / problem_instance.vehicle_capacity for s in sweeps]
+            capacity_constraint_sweeps = [
+                s for i, s in enumerate(sweeps) if capacity_ratios[i] >= self.min_capacity_ratio and capacity_ratios[i] <= 1
+            ]
+            all_sweeps.extend(capacity_constraint_sweeps)
         return set(all_sweeps)
 
 
