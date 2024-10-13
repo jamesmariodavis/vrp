@@ -1,0 +1,25 @@
+{
+    "editor.tabCompletion": "on",
+    "editor.formatOnSave": true,
+    "editor.inlineSuggest.enabled": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit",
+        "source.sortImports": "explicit",
+        "source.fixAll": "explicit",
+    },
+    "notebook.formatOnSave.enabled": true,
+    "notebook.codeActionsOnSave": {
+        "source.organizeImports": "explicit",
+        "source.sortImports": "explicit",
+        "source.fixAll": "explicit",
+    },
+    "[python]": {
+      "editor.formatOnType": true,
+      "editor.defaultFormatter": "ms-python.black-formatter",
+    },
+    "jupyter.notebookFileRoot": "${workspaceFolder}",
+    "python.testing.autoTestDiscoverOnSaveEnabled": false,
+    "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
+  }

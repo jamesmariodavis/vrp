@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "datasoup"
+version = "0.1.0"
+description = "Vehicle routing problem solver"
+authors = ["James Davis <jamesmariodavis@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "vrp" }]
+package-mode = false
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = ">=2.2"
+ortools = "^9.11.4210"
+pydantic = "^2.9.2"
+ipykernel = "^6.29.5"
+plotly = "^5.24.1"
+nbformat = "^5.10.4"
+
+
+[tool.pyright]
+reportMatchNotExhaustive = true
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnknownParameterType = true
+
+
+[tool.black]
+line-length = 140
+
+
+[tool.ruff]
+line-length = 140
+
+
+[tool.ruff.lint]
+select = ["ALL"]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

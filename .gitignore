@@ -1,0 +1,5 @@
+.venv/
+vrp/dev_junk
+.DS_Store
+*.pyc
+keys.json
