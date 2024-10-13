@@ -132,26 +132,42 @@ class VRPInitialRouteHeuristic:
 
 
 class ExhaustiveHeuristic(VRPInitialRouteHeuristic):
+    def __init__(
+        self,
+        tsp_correct_paths: bool = True,
+        use_global_tsp_ordering: bool = False,
+    ) -> None:
+        super().__init__(tsp_correct_paths=tsp_correct_paths)
+        self.use_global_tsp_ordering = use_global_tsp_ordering
+
     def _get_routes(self, problem_instance: ProblemInstance) -> set[tuple[Location, ...]]:
-        if not self.tsp_correct_paths:
+        if not self.tsp_correct_paths and self.use_global_tsp_ordering:
             tsp_ordering = TSPSolver(problem_instance).solve(problem_instance.locations)
-            tsp_ranking = {loc: i for i, loc in enumerate(tsp_ordering.locations_in_order)}
+            location_ranking_ranking = {loc: i for i, loc in enumerate(tsp_ordering.locations_in_order)}
         else:
-            tsp_ranking = {loc: i for i, loc in enumerate(problem_instance.locations)}
+            location_ranking_ranking = {loc: i for i, loc in enumerate(problem_instance.locations)}
 
         all_locations = [loc for loc in problem_instance.locations if not loc.is_depot]
         all_location_subsets = chain.from_iterable(combinations(all_locations, r) for r in range(1, len(all_locations) + 1))
-        all_location_subsets = [tuple(sorted(s, key=lambda x: tsp_ranking[x])) for s in all_location_subsets]
+        all_location_subsets = [tuple(sorted(s, key=lambda x: location_ranking_ranking[x])) for s in all_location_subsets]
         return set(all_location_subsets)
 
 
 class NearestNeighborHeuristic(VRPInitialRouteHeuristic):
+    def __init__(
+        self,
+        tsp_correct_paths: bool = True,
+        use_global_tsp_ordering: bool = False,
+    ) -> None:
+        super().__init__(tsp_correct_paths=tsp_correct_paths)
+        self.use_global_tsp_ordering = use_global_tsp_ordering
+
     def _get_routes(self, problem_instance: ProblemInstance) -> set[tuple[Location, ...]]:
-        if not self.tsp_correct_paths:
+        if not self.tsp_correct_paths and self.use_global_tsp_ordering:
             tsp_ordering = TSPSolver(problem_instance).solve(problem_instance.locations)
-            tsp_ranking = {loc: i for i, loc in enumerate(tsp_ordering.locations_in_order)}
+            location_ranking = {loc: i for i, loc in enumerate(tsp_ordering.locations_in_order)}
         else:
-            tsp_ranking = {loc: i for i, loc in enumerate(problem_instance.locations)}
+            location_ranking = {loc: i for i, loc in enumerate(problem_instance.locations)}
 
         location_lists = set()
         for location in [problem_instance.depot, *problem_instance.locations]:
@@ -161,12 +177,20 @@ class NearestNeighborHeuristic(VRPInitialRouteHeuristic):
                 key=lambda x: problem_instance.get_distance(location, x),
             )
             location_lists_by_distance = [locations_by_distance[:i] for i in range(1, len(locations_by_distance) + 1)]
-            location_lists_by_distance = [tuple(sorted(s, key=lambda x: tsp_ranking[x])) for s in location_lists_by_distance]
+            location_lists_by_distance = [tuple(sorted(s, key=lambda x: location_ranking[x])) for s in location_lists_by_distance]
             location_lists.update(location_lists_by_distance)
         return location_lists
 
 
 class SweepAngleHeuristic(VRPInitialRouteHeuristic):
+    def __init__(
+        self,
+        tsp_correct_paths: bool = True,
+        lower_capacity_ratio: float = 0.5,
+    ) -> None:
+        super().__init__(tsp_correct_paths=tsp_correct_paths)
+        self.lower_capacity_ratio = lower_capacity_ratio
+
     @staticmethod
     def _get_angles(loc_x_y: list[tuple[float, float]]) -> list[float]:
         # returns angle of locations vs north pole
@@ -191,7 +215,12 @@ class SweepAngleHeuristic(VRPInitialRouteHeuristic):
         for i in range(len(ordered_locations)):
             # add all sweeps starting from index
             sweeps = [tuple(ordered_locations_sweep_list[i : i + j]) for j in range(1, len(ordered_locations))]
-            all_sweeps.extend(sweeps)
+            capacity_ratios = [sum(loc.demand for loc in s if loc.demand is not None) / problem_instance.vehicle_capacity for s in sweeps]
+            # filter sweeps to only those with sufficient capacity
+            capacity_filtered_sweeps = [
+                sweep for sweep, ratio in zip(sweeps, capacity_ratios) if ratio >= self.lower_capacity_ratio and ratio <= 1
+            ]
+            all_sweeps.extend(capacity_filtered_sweeps)
         return set(all_sweeps)
 
 
