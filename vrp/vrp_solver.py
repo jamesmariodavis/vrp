@@ -94,6 +94,7 @@ class VRPSolution(BaseModel, frozen=True):
             title="Vehicle Routing Problem",
             hover_name="Route ID",
             hover_data=["x coordinate", "y coordinate", "Location ID", "Generation Model"],
+            markers=True,
         )
         fig.update_layout(
             height=size * 100,
